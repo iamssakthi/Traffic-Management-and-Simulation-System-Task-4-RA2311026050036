@@ -10,6 +10,10 @@ import { PolicyValuePage } from './pages/PolicyValuePage';
 import { ComparisonPage } from './pages/ComparisonPage';
 import { ExperimentsPage } from './pages/ExperimentsPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { DebuggingLabPage } from './pages/DebuggingLabPage';
+import { BugRepositoryPage } from './pages/BugRepositoryPage';
+import { CodeComparisonPage } from './pages/CodeComparisonPage';
+import { PerformanceEvalPage } from './pages/PerformanceEvalPage';
 import { Scenario, Experiment } from './types';
 import { fetchScenarios, fetchExperiments, fetchTrainingStatus } from './services/api';
 
@@ -18,6 +22,7 @@ export function App() {
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [experiments, setExperiments] = useState<Experiment[]>([]);
   const [isTraining, setIsTraining] = useState<boolean>(false);
+  const [selectedBugForDiff, setSelectedBugForDiff] = useState<string>('BUG-ALG-01');
 
   const loadData = async () => {
     try {
@@ -39,6 +44,11 @@ export function App() {
     const interval = setInterval(loadData, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleNavigateToDiff = (bugId: string) => {
+    setSelectedBugForDiff(bugId);
+    setActiveTab('code-comparison');
+  };
 
   return (
     <div className="min-h-screen bg-[#0B0F19] text-slate-100 flex flex-col font-sans selection:bg-indigo-500/30">
@@ -75,6 +85,21 @@ export function App() {
         {activeTab === 'comparison' && (
           <ComparisonPage scenarios={scenarios} />
         )}
+        {activeTab === 'debugging-lab' && (
+          <DebuggingLabPage />
+        )}
+        {activeTab === 'bug-repository' && (
+          <BugRepositoryPage onNavigateToCode={handleNavigateToDiff} />
+        )}
+        {activeTab === 'code-comparison' && (
+          <CodeComparisonPage
+            initialBugId={selectedBugForDiff}
+            onNavigateToRepository={() => setActiveTab('bug-repository')}
+          />
+        )}
+        {activeTab === 'performance-eval' && (
+          <PerformanceEvalPage />
+        )}
         {activeTab === 'experiments' && (
           <ExperimentsPage experiments={experiments} onRefresh={loadData} />
         )}
@@ -87,7 +112,7 @@ export function App() {
       <footer className="border-t border-white/5 py-6 px-6 bg-[#080B13] text-xs text-slate-500 text-center">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
           <div>
-            Intelligent Traffic Signal Optimization Using Reinforcement Learning
+            Intelligent Traffic Signal Optimization Using Reinforcement Learning — Task 4 RL Debugging Lab
           </div>
           <div className="flex items-center gap-3">
             <span>FastAPI Backend</span>
@@ -101,5 +126,4 @@ export function App() {
     </div>
   );
 }
-
 export default App;

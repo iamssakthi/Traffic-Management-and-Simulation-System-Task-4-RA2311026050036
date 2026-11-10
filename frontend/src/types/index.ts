@@ -441,3 +441,101 @@ export interface TransitionSummary {
   }>;
 }
 
+// -------------------------------------------------------------
+// Task 4: Advanced RL Debugging Interfaces
+// -------------------------------------------------------------
+export interface BugItem {
+  id: string;
+  name: string;
+  category: string;
+  subcategory: string;
+  affected_algorithms: string[];
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  file_name: string;
+  function_name: string;
+  line_number: number;
+  description: string;
+  root_cause: string;
+  mathematical_impact: string;
+  expected_behavior: string;
+  actual_behavior: string;
+  faulty_code: string;
+  corrected_code: string;
+  validation_metric: string;
+}
+
+export interface BugOverview {
+  title: string;
+  description: string;
+  total_bugs: number;
+  categories: Record<string, number>;
+  supported_algorithms: string[];
+  debugging_methodology: string[];
+}
+
+export interface DebuggingExperimentTrial {
+  name: string;
+  mean_waiting_time: number;
+  mean_queue_length: number;
+  mean_throughput: number;
+  mean_reward: number;
+  training_duration_s: number;
+  final_epsilon?: number;
+  bugs_active?: string[];
+  bugs_resolved?: string[];
+  history: Array<{
+    episode: number;
+    reward: number;
+    waiting_time: number;
+    queue_length: number;
+    throughput: number;
+    loss?: number;
+    gradient_norm?: number;
+    epsilon?: number;
+    mean_td_error?: number;
+  }>;
+}
+
+export interface DebuggingComparisonResult {
+  algorithm: string;
+  scenario: string;
+  episodes: number;
+  seed: number;
+  faulty: DebuggingExperimentTrial;
+  corrected: DebuggingExperimentTrial;
+  improvements: {
+    waiting_time_percent: number;
+    queue_length_percent: number;
+    throughput_percent: number;
+    reward_percent: number;
+  };
+  verdict: string;
+}
+
+export interface DebuggingMetricComparisonItem {
+  metric: string;
+  direction: string;
+  q_learning: {
+    faulty: number;
+    corrected: number;
+    improvement_pct: number;
+  };
+  dqn: {
+    faulty: number;
+    corrected: number;
+    improvement_pct: number;
+  };
+}
+
+export interface BugTestResult {
+  bug_id: string;
+  test_name: string;
+  faulty_passed: boolean;
+  faulty_observed?: any;
+  corrected_passed: boolean;
+  corrected_observed?: any;
+  expected?: any;
+  status: string;
+}
+
+

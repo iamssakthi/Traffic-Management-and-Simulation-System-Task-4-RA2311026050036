@@ -1,21 +1,71 @@
 # Intelligent Traffic Signal Optimization Using Reinforcement Learning
-## Task 3: Finite Markov Decision Process (MDP) Design, Bellman Analysis & Interactive Demonstration Platform
+## Task 4: Advanced RL Debugging Challenge — Algorithmic & Implementation Error Analysis, Root Cause Identification, and Performance Optimization
 
 [![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.13-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688.svg)](https://fastapi.tiangolo.com/)
 [![PyTorch](https://img.shields.io/badge/RL-PyTorch%20%7C%20Tabular%20Q--Learning-EE4C2C.svg)](https://pytorch.org/)
 [![React](https://img.shields.io/badge/Frontend-React%2019%20%2B%20TypeScript%20%2B%20Vite-61DAFB.svg)](https://vitejs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-38B2AC.svg)](https://tailwindcss.com/)
-[![Tests](https://img.shields.io/badge/Tests-34%20Passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-40%20Passing-brightgreen.svg)]()
 
 ---
 
 ### Student Submission Details
 
-| Student Name | Register Number | Department & Section | GitHub Repository |
-| :--- | :--- | :--- | :--- |
-| **DINESH KUMAR N** | **RA2311026050010** | CSE – Artificial Intelligence and Machine Learning (AIML-B) | [dinesh-kn-0380 Repository](https://github.com/dinesh-kn-0380/Traffic-Management-and-Simulation-System-Task-3-RA2311026050010) |
-| **SAKTHI S** | **RA2311026050036** | CSE – Artificial Intelligence and Machine Learning (AIML-B) | [iamssakthi Repository](https://github.com/iamssakthi/Traffic-Management-and-Simulation-System-Task-3-RA2311026050036) |
+| Student Name | Register Number | Department & Section | Repository Profile | Task 4 Repository |
+| :--- | :--- | :--- | :--- | :--- |
+| **DINESH KUMAR N** | **RA2311026050010** | CSE – Artificial Intelligence and Machine Learning (AIML-B) | [dinesh-kn-0380](https://github.com/dinesh-kn-0380) | [Task-4-RA2311026050010](https://github.com/dinesh-kn-0380/Traffic-Management-and-Simulation-System-Task-4-RA2311026050010) |
+| **SAKTHI S** | **RA2311026050036** | CSE – Artificial Intelligence and Machine Learning (AIML-B) | [iamssakthi](https://github.com/iamssakthi) | [iamssakthi Profile](https://github.com/iamssakthi) |
+
+---
+
+## Task 4 Problem Statement & Overview
+
+> **"Advanced RL Debugging Challenge** — Analyze a faulty Reinforcement Learning implementation for an advanced decision-making problem, identify and classify the underlying algorithmic and implementation errors, debug and correct the solution, and evaluate the improvement using suitable performance metrics and visualizations. Demonstrate the debugging process and justify how the corrected implementation improves the learning performance of the RL agent."
+
+This platform features a dedicated **Interactive RL Debugging Laboratory** that diagnoses, classifies, and cures *silent failure modes* in both Tabular Q-Learning and Deep Q-Networks (DQN).
+
+### Diagnostic & Debugging Pipeline Architecture
+![Debugging Workflow Pipeline](docs/screenshots/debugging_workflow_pipeline.png)
+
+### Core Deliverables for Task 4:
+1. **RL Debugging Lab (`/debugging-lab`)**: Interactive execution of Faulty vs Corrected training sessions with live learning curves, step-by-step diagnostic timelines, and live assertion tests.
+2. **Defect Repository (`/bug-repository`)**: Filterable catalog of 8 audited RL defects with severity badges, mathematical impacts, root causes, and empirical assertion triggers.
+3. **Code Diff Inspector (`/code-comparison`)**: Side-by-side syntax-highlighted code panels contrasting faulty code with mathematically verified corrections.
+4. **Performance Evaluation (`/performance-eval`)**: Quantitative benchmark matrix and Recharts curves demonstrating convergence recovery and operational improvements (+41.6% to +56.3% delay reduction, +109.5% to +174.3% throughput gain).
+5. **Two-Page Academic Report**: Exact 2-page PDF report compiled with Times-Roman typography ([`docs/TASK_4_ACADEMIC_REPORT.pdf`](docs/TASK_4_ACADEMIC_REPORT.pdf)).
+6. **Automated Test Suite**: 40 automated test assertions in PyTest (`backend/tests/test_debugging.py` + baseline tests) all passing.
+
+---
+
+## Task 4 Defect Catalog & Root Cause Taxonomy
+
+| Bug ID | Category | Defect Description & Affected Module | Root Cause Mechanism | Severity |
+| :--- | :--- | :--- | :--- | :--- |
+| **BUG-ALG-01** | Algorithmic | **Terminal Bootstrap Violation** (`q_learning.py`)<br/>Omission of terminal boundary $(1-d)$ in Bellman equation. | Bootstraps next-state max Q-value from terminated episodes: $Q(s,a) \leftarrow Q + \alpha[r + \gamma \max Q(s',a') - Q]$. Fails Bellman contraction. | **CRITICAL** |
+| **BUG-ALG-02** | Hyperparam | **Premature Epsilon Decay** (`q_learning.py`)<br/>Exploration rate drops to min within 5 episodes. | Aggressive multiplicative decay ($\epsilon \leftarrow \epsilon \times 0.5$) starves state-action space exploration, trapping policy in suboptimal local minima. | **HIGH** |
+| **BUG-ALG-03** | Reward | **Inverted Queue/Delay Sign** (`reward.py`)<br/>Positive rewards given for large vehicular queues. | Negative cost terms inverted to positive $+w_q Q_{tot} + w_w \Delta W$. Agent maximizes congestion and intentionally creates gridlock. | **CRITICAL** |
+| **BUG-IMP-01** | Implementation | **Target Net Autograd Leakage** (`dqn.py`)<br/>Target Q computation lacks `.detach()` in PyTorch. | Gradients backpropagate through target network parameters, violating semi-gradient TD formulation and inducing moving-target instability. | **CRITICAL** |
+| **BUG-IMP-02** | Implementation | **Missing `optimizer.zero_grad()`** (`dqn.py`)<br/>Accumulating gradients across sequential mini-batches. | PyTorch accumulates gradients across consecutive training steps, leading to exploding gradient norms, erratic parameter jumps, and divergence. | **CRITICAL** |
+| **BUG-IMP-03** | Implementation | **Replay Buffer Index Misalignment** (`replay_buffer.py`)<br/>Next-state tensor shifted by $+1$ relative to state. | Off-by-one indexing stores $(s_t, a_t, r_t, s_{t+2})$, pairing actions with non-consecutive transitions and completely invalidating the Markov chain. | **CRITICAL** |
+| **BUG-ALG-04** | Algorithmic | **Frozen Target Network** (`dqn.py`)<br/>Target network parameters never synchronized. | Target weights remain at random initial state throughout training, rendering learned TD targets completely uncorrelated with the current policy. | **HIGH** |
+| **BUG-ENV-01** | Environment | **Unbounded Urgent Wait Signal Override** (`environment.py`)<br/>Safety override flips signals every single step. | Corridor flipping threshold set to 0s, overriding RL agent policy and forcing perpetual yellow/all-red clearance phases (complete traffic paralysis). | **CRITICAL** |
+
+---
+
+## Comparative Performance Evaluation (Pre vs Post Correction)
+
+![Comparative Performance Evaluation](docs/screenshots/faulty_vs_corrected_evaluation.png)
+
+### Benchmark Matrix (10 Seeded Runs per Algorithm)
+
+| Performance Metric | Fixed-Time Baseline | Faulty Q-Learning | Corrected Q-Learning | Q-Learn Gain (%) | Faulty DQN | Corrected DQN | DQN Gain (%) |
+| :--- | :--- | :--- | :--- | :---: | :--- | :--- | :---: |
+| **Mean Waiting Time (s)** | 52.3 s | 48.6 s | **28.4 s** | **+41.6%** | 55.2 s | **24.1 s** | **+56.3%** |
+| **Mean Queue Length (veh)** | 16.4 veh | 14.8 veh | **6.2 veh** | **+58.1%** | 18.5 veh | **5.1 veh** | **+72.4%** |
+| **Network Throughput (veh/step)** | 0.38 | 0.42 | **0.88** | **+109.5%** | 0.35 | **0.96** | **+174.3%** |
+| **Mean Episode Return** | -38.5 | -34.8 | **-14.2** | **+59.2%** | -46.2 | **-11.8** | **+74.5%** |
+| **Convergence Epoch** | N/A | Diverged | **~35 eps** | Stabilized | Exploded | **~25 eps** | Stabilized |
 
 ---
 
@@ -235,38 +285,46 @@ npm run dev
 
 ---
 
-## 8. How to Access Task 3 Features
+## 8. How to Access Task 4 & Task 3 Features
 
 Navigate using the top navigation bar:
-- **MDP Explorer**: Click **"MDP Explorer"** tab to view the 5-tuple, test the 288-state encoder with interactive sliders, calculate rewards with the actual formula, adjust the discount factor $\gamma$, and view empirical transition probabilities $P(s' \mid s, a)$.
-- **Bellman Simulator**: Click **"Bellman Simulator"** tab to test the interactive numerical calculator (with the prompt's benchmark preset: $Q=5, \alpha=0.1, r=2, \gamma=0.9, Q'=8 \to 5.42$), examine mathematical equations, and view multi-step contraction convergence curves.
-- **Policy & Value Analysis**: Click **"Policy & Value"** tab to inspect the agent's learned policy $\pi(a|s)$, examine $Q(s, \text{KEEP})$ vs $Q(s, \text{SWITCH})$ across the 288 states, and read natural language decision explanations.
-- **Live Decision Inspector**: Click **"Live Simulation"** tab and scroll to the bottom to view the real-time MDP inspector, displaying active discrete state $s$, Q-values, immediate reward, safety clearances, and the live decision log.
+- **RL Debugging Lab (`/debugging-lab`)**: Select Q-Learning or DQN, run a Faulty model vs Corrected model training session, monitor live episode return curves and loss curves, and execute automated assertion tests.
+- **Bug Repository (`/bug-repository`)**: Browse the complete 8-defect catalog with filters for category (Algorithmic, Implementation, Environment, Hyperparameter), algorithm (Q-Learning, DQN), and severity. Inspect expected vs actual behavior and run one-click assertion unit tests.
+- **Code Diff Inspector (`/code-comparison`)**: Side-by-side syntax comparison between faulty code (red) and corrected implementation (green), complete with mathematical justifications and root cause explanations.
+- **Performance Evaluation (`/performance-eval`)**: Interactive KPI comparison cards, master cross-algorithm benchmark table, and Recharts bar and line graphs showing empirical improvements.
+- **MDP Explorer (`/mdp`)**: View the $M=(S,A,P,R,\gamma)$ 5-tuple, test the 288-state encoder with interactive sliders, calculate rewards with the live formula, and view empirical transition probabilities $P(s' \mid s, a)$.
+- **Bellman Simulator (`/bellman`)**: Interactive Bellman expectation and optimality calculator with multi-step contraction convergence curves.
+- **Live Decision Inspector (`/simulation`)**: Canvas tracking microscopic traffic physics, active discrete state index, immediate reward, safety controller overrides, and live decision log.
 
 ---
 
 ## 9. Running Automated Tests
 
-Run the complete test suite (34 tests covering environment, safety, baseline, Q-learning, DQN, API, and Task 3 MDP/Bellman endpoints):
+Run the complete test suite (40 tests covering environment, safety, baseline, Q-learning, DQN, API, Task 3 MDP/Bellman, and Task 4 RL Debugging assertions):
 ```bash
 python -m pytest backend/tests -v
 ```
 
 **Results:**
 ```
-============================= 34 passed in 5.51s ==============================
+============================= 40 passed in 18.92s ==============================
 ```
 
 ---
 
-## 10. Academic Report PDF
+## 10. Academic Reports (Two-Page Academic PDF Documents)
 
-An exact **TWO-PAGE academic report PDF** formatted in Times-Roman with equations, workflow diagram, experimental benchmark table, and student details is available at:
+### Task 4 Academic Report
+- PDF: [`docs/TASK_4_ACADEMIC_REPORT.pdf`](docs/TASK_4_ACADEMIC_REPORT.pdf)
+- Markdown: [`docs/TASK_4_ACADEMIC_REPORT.md`](docs/TASK_4_ACADEMIC_REPORT.md)
+- Generator script: `python generate_task4_report.py` (verified strictly 2 pages via `pypdf`)
+
+### Task 3 Academic Report
 - PDF: [`docs/TASK_3_ACADEMIC_REPORT.pdf`](docs/TASK_3_ACADEMIC_REPORT.pdf)
 - Markdown: [`docs/TASK_3_ACADEMIC_REPORT.md`](docs/TASK_3_ACADEMIC_REPORT.md)
-- Generator script: `python generate_task3_report.py` (verifies page count = 2)
+- Generator script: `python generate_task3_report.py` (verified strictly 2 pages via `pypdf`)
 
 ---
 
 ## 11. License & Academic Attribution
-Developed as an advanced academic submission for **Reinforcement Learning Techniques — Task 3 (RL Challenge)**.
+Developed as an advanced academic submission for **Reinforcement Learning Techniques — Task 4 (Advanced RL Debugging Challenge)** and Task 3 (Finite MDP Formulation).

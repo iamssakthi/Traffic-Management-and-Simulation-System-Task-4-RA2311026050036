@@ -17,6 +17,11 @@ import {
   RewardResult,
   DecisionRecord,
   TransitionSummary,
+  BugItem,
+  BugOverview,
+  DebuggingComparisonResult,
+  DebuggingMetricComparisonItem,
+  BugTestResult,
 } from '../types';
 
 const BASE_URL = '';
@@ -259,4 +264,69 @@ export async function fetchDecisionHistory(limit: number = 50): Promise<{ histor
   const res = await fetch(`${BASE_URL}/api/mdp/decision-history?limit=${limit}`);
   return res.json();
 }
+
+// -------------------------------------------------------------
+// Task 4: Advanced RL Debugging APIs
+// -------------------------------------------------------------
+export async function fetchDebuggingOverview(): Promise<BugOverview> {
+  const res = await fetch(`${BASE_URL}/api/debugging/overview`);
+  return res.json();
+}
+
+export async function fetchDebuggingBugs(category?: string, algorithm?: string): Promise<{ total: number; bugs: BugItem[] }> {
+  let url = `${BASE_URL}/api/debugging/bugs`;
+  const params: string[] = [];
+  if (category) params.push(`category=${encodeURIComponent(category)}`);
+  if (algorithm) params.push(`algorithm=${encodeURIComponent(algorithm)}`);
+  if (params.length > 0) url += `?${params.join('&')}`;
+  const res = await fetch(url);
+  return res.json();
+}
+
+export async function fetchDebuggingBugDetail(bug_id: string): Promise<BugItem> {
+  const res = await fetch(`${BASE_URL}/api/debugging/bugs/${bug_id}`);
+  return res.json();
+}
+
+export async function fetchDebuggingCodeDiff(bug_id: string): Promise<any> {
+  const res = await fetch(`${BASE_URL}/api/debugging/code-diff/${bug_id}`);
+  return res.json();
+}
+
+export async function runDebuggingFaulty(algorithm: string, scenario_id: string, episodes: number = 10): Promise<any> {
+  const res = await fetch(
+    `${BASE_URL}/api/debugging/run-faulty?algorithm=${algorithm}&scenario_id=${scenario_id}&episodes=${episodes}`,
+    { method: 'POST' }
+  );
+  return res.json();
+}
+
+export async function runDebuggingCorrected(algorithm: string, scenario_id: string, episodes: number = 10): Promise<any> {
+  const res = await fetch(
+    `${BASE_URL}/api/debugging/run-corrected?algorithm=${algorithm}&scenario_id=${scenario_id}&episodes=${episodes}`,
+    { method: 'POST' }
+  );
+  return res.json();
+}
+
+export async function fetchDebuggingComparison(algorithm: string = 'q_learning'): Promise<DebuggingComparisonResult> {
+  const res = await fetch(`${BASE_URL}/api/debugging/comparison?algorithm=${algorithm}`);
+  return res.json();
+}
+
+export async function fetchDebuggingMetrics(): Promise<{ metrics: DebuggingMetricComparisonItem[]; summary: string }> {
+  const res = await fetch(`${BASE_URL}/api/debugging/metrics`);
+  return res.json();
+}
+
+export async function testDebuggingBug(bug_id: string): Promise<BugTestResult> {
+  const res = await fetch(`${BASE_URL}/api/debugging/test?bug_id=${bug_id}`, { method: 'POST' });
+  return res.json();
+}
+
+export async function resetDebugging(): Promise<any> {
+  const res = await fetch(`${BASE_URL}/api/debugging/reset`, { method: 'POST' });
+  return res.json();
+}
+
 
